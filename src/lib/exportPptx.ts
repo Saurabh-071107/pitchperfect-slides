@@ -153,7 +153,7 @@ export async function exportPresentation() {
     const slide = pptx.addSlide();
     slide.background = { color: BG };
     addCornerAccents(slide);
-    slide.addText("🖥️  TECHNOLOGY", { x: 0.8, y: 0.5, w: 6, h: 0.5, fontSize: 13, fontFace: "Calibri", bold: true, color: PRIMARY, letterSpacing: 3 });
+    slide.addText("🖥️  TECHNOLOGY", { x: 0.8, y: 0.5, w: 6, h: 0.5, fontSize: 13, fontFace: "Calibri", bold: true, color: PRIMARY });
     slide.addText("Technology Stack", { x: 0.8, y: 1.1, w: 10, h: 0.8, fontSize: 36, fontFace: "Calibri", bold: true, color: FG });
 
     const stacks = [
