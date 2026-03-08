@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, Maximize, Minimize, Grid, Download } from "lucide-react";
+import { ChevronLeft, ChevronRight, Maximize, Minimize, Grid, Download, Loader2 } from "lucide-react";
 import { exportPresentation } from "@/lib/exportPptx";
+import { toast } from "sonner";
 import SlideTitleSlide from "./slides/SlideTitleSlide";
 import SlideProblem from "./slides/SlideProblem";
 import SlideSolution from "./slides/SlideSolution";
@@ -27,7 +28,24 @@ const PresentationViewer = () => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showGrid, setShowGrid] = useState(false);
   const [scale, setScale] = useState(1);
+  const [exporting, setExporting] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const handleExport = useCallback(async () => {
+    setExporting(true);
+    toast.info("Generating PPTX — capturing slides...");
+    try {
+      await exportPresentation((cur, total) => {
+        toast.info(`Capturing slide ${cur}/${total}...`);
+      });
+      toast.success("PPTX downloaded!");
+    } catch (e) {
+      console.error(e);
+      toast.error("Export failed");
+    } finally {
+      setExporting(false);
+    }
+  }, []);
 
   const updateScale = useCallback(() => {
     if (!containerRef.current) return;
@@ -165,8 +183,8 @@ const PresentationViewer = () => {
 
         <div className="w-px h-4 bg-border" />
 
-        <button onClick={() => exportPresentation()} className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors" title="Download PPTX">
-          <Download className="w-4 h-4" />
+        <button onClick={handleExport} disabled={exporting} className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground disabled:opacity-50 transition-colors" title="Download PPTX">
+          {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
         </button>
       </motion.div>
     </div>

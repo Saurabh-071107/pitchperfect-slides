@@ -3,7 +3,6 @@ import html2canvas from "html2canvas";
 import { createElement } from "react";
 import { createRoot } from "react-dom/client";
 
-// We import slide components lazily to render them offscreen
 import SlideTitleSlide from "@/components/slides/SlideTitleSlide";
 import SlideProblem from "@/components/slides/SlideProblem";
 import SlideSolution from "@/components/slides/SlideSolution";
@@ -25,37 +24,70 @@ const slideComponents = [
 ];
 
 async function renderSlideToImage(Component: React.FC): Promise<string> {
-  // Create an offscreen container at exact slide dimensions
+  // Create a visible but off-screen container so styles/SVGs render properly
   const container = document.createElement("div");
-  container.style.position = "fixed";
+  container.style.position = "absolute";
   container.style.left = "-9999px";
   container.style.top = "0";
   container.style.width = "1920px";
   container.style.height = "1080px";
   container.style.overflow = "hidden";
+  container.style.zIndex = "-1";
+  // Ensure it inherits the dark theme background
+  container.style.backgroundColor = "hsl(220, 20%, 7%)";
+  container.className = "slide-export-container";
   document.body.appendChild(container);
 
-  // Render the slide component into the container
+  // Render the component
   const root = createRoot(container);
   await new Promise<void>((resolve) => {
     root.render(createElement(Component));
-    // Wait for render + animations to settle
-    setTimeout(resolve, 600);
+    // Give time for:
+    // 1. React render
+    // 2. Framer-motion animations to complete
+    // 3. Fonts to apply
+    // 4. SVG icons to render
+    setTimeout(resolve, 1500);
   });
 
-  // Capture as canvas
+  // Convert all SVG elements to inline so html2canvas can capture them
+  const svgs = container.querySelectorAll("svg");
+  svgs.forEach((svg) => {
+    // Ensure SVGs have explicit dimensions and are visible
+    const computed = window.getComputedStyle(svg);
+    if (!svg.getAttribute("width")) {
+      svg.setAttribute("width", computed.width);
+    }
+    if (!svg.getAttribute("height")) {
+      svg.setAttribute("height", computed.height);
+    }
+    // Convert currentColor to actual color
+    const color = computed.color;
+    svg.querySelectorAll("*").forEach((el) => {
+      const elStyle = window.getComputedStyle(el);
+      if (elStyle.stroke === "currentColor" || el.getAttribute("stroke") === "currentcolor") {
+        (el as HTMLElement).style.stroke = color;
+      }
+      if (elStyle.fill === "currentColor" || el.getAttribute("fill") === "currentcolor") {
+        (el as HTMLElement).style.fill = color;
+      }
+    });
+  });
+
+  // Capture with html2canvas
   const canvas = await html2canvas(container, {
     width: 1920,
     height: 1080,
-    scale: 1,
-    backgroundColor: null,
+    scale: 2, // 2x for crisp output
+    backgroundColor: "#0B0F14",
     useCORS: true,
     logging: false,
+    allowTaint: true,
+    foreignObjectRendering: true,
   });
 
-  const dataUrl = canvas.toDataURL("image/png");
+  const dataUrl = canvas.toDataURL("image/png", 1.0);
 
-  // Cleanup
   root.unmount();
   document.body.removeChild(container);
 
