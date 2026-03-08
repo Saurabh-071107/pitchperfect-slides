@@ -46,7 +46,7 @@ export async function exportPresentation() {
     const slide = pptx.addSlide();
     slide.background = { color: BG };
     addCornerAccents(slide);
-    slide.addText("⚠️  THE PROBLEM", { x: 0.8, y: 0.5, w: 6, h: 0.5, fontSize: 13, fontFace: "Calibri", bold: true, color: RED, letterSpacing: 3 });
+    slide.addText("⚠️  THE PROBLEM", { x: 0.8, y: 0.5, w: 6, h: 0.5, fontSize: 13, fontFace: "Calibri", bold: true, color: RED });
     slide.addText("Evolving\nFinancial Crime", { x: 0.8, y: 1.1, w: 7, h: 1.4, fontSize: 36, fontFace: "Calibri", bold: true, color: FG });
     slide.addText("Traditional rule-based detection systems rely on static thresholds. Modern criminals exploit the gaps using three primary techniques:", {
       x: 0.8, y: 2.6, w: 7, h: 0.8, fontSize: 13, fontFace: "Calibri", color: MUTED, lineSpacingMultiple: 1.3,
