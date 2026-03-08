@@ -187,9 +187,21 @@ const PresentationViewer = () => {
 
         <div className="w-px h-4 bg-border" />
 
-        <button onClick={handleExport} disabled={exporting} className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground disabled:opacity-50 transition-colors" title="Download PPTX">
-          {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-        </button>
+        <div className="relative">
+          <button onClick={() => setShowExportMenu((v) => !v)} disabled={exporting} className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground disabled:opacity-50 transition-colors" title="Download">
+            {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+          </button>
+          {showExportMenu && !exporting && (
+            <div className="absolute bottom-full mb-2 right-0 bg-card border border-border rounded-lg shadow-lg overflow-hidden min-w-[140px]">
+              <button onClick={() => handleExport("pptx")} className="flex items-center gap-2 w-full px-3 py-2 text-xs text-foreground hover:bg-accent transition-colors">
+                <FileDown className="w-3.5 h-3.5" /> Download PPTX
+              </button>
+              <button onClick={() => handleExport("pdf")} className="flex items-center gap-2 w-full px-3 py-2 text-xs text-foreground hover:bg-accent transition-colors">
+                <FileText className="w-3.5 h-3.5" /> Download PDF
+              </button>
+            </div>
+          )}
+        </div>
       </motion.div>
     </div>
   );

@@ -106,13 +106,7 @@ export async function exportPresentation(onProgress?: (current: number, total: n
     onProgress?.(i + 1, slideComponents.length);
     const imageData = await renderSlideToImage(slideComponents[i]);
     const slide = pptx.addSlide();
-    slide.addImage({
-      data: imageData,
-      x: 0,
-      y: 0,
-      w: 13.33,
-      h: 7.5,
-    });
+    slide.addImage({ data: imageData, x: 0, y: 0, w: 13.33, h: 7.5 });
   }
 
   const blob = (await pptx.write({ outputType: "blob" })) as Blob;
@@ -122,4 +116,17 @@ export async function exportPresentation(onProgress?: (current: number, total: n
   a.download = "Fund_Flow_Fraud_Detection.pptx";
   a.click();
   URL.revokeObjectURL(url);
+}
+
+export async function exportPDF(onProgress?: (current: number, total: number) => void) {
+  const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [1920, 1080] });
+
+  for (let i = 0; i < slideComponents.length; i++) {
+    onProgress?.(i + 1, slideComponents.length);
+    const imageData = await renderSlideToImage(slideComponents[i]);
+    if (i > 0) pdf.addPage([1920, 1080], "landscape");
+    pdf.addImage(imageData, "PNG", 0, 0, 1920, 1080);
+  }
+
+  pdf.save("Fund_Flow_Fraud_Detection.pdf");
 }
