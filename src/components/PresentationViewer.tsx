@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, Maximize, Minimize, Grid, Download, Loader2 } from "lucide-react";
-import { exportPresentation } from "@/lib/exportPptx";
+import { ChevronLeft, ChevronRight, Maximize, Minimize, Grid, Download, Loader2, FileText, FileDown } from "lucide-react";
+import { exportPresentation, exportPDF } from "@/lib/exportPptx";
 import { toast } from "sonner";
 import SlideTitleSlide from "./slides/SlideTitleSlide";
 import SlideProblem from "./slides/SlideProblem";
@@ -29,16 +29,20 @@ const PresentationViewer = () => {
   const [showGrid, setShowGrid] = useState(false);
   const [scale, setScale] = useState(1);
   const [exporting, setExporting] = useState(false);
+  const [showExportMenu, setShowExportMenu] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const handleExport = useCallback(async () => {
+  const handleExport = useCallback(async (format: "pptx" | "pdf") => {
     setExporting(true);
-    toast.info("Generating PPTX — capturing slides...");
+    setShowExportMenu(false);
+    const label = format.toUpperCase();
+    toast.info(`Generating ${label} — capturing slides...`);
     try {
-      await exportPresentation((cur, total) => {
+      const fn = format === "pptx" ? exportPresentation : exportPDF;
+      await fn((cur, total) => {
         toast.info(`Capturing slide ${cur}/${total}...`);
       });
-      toast.success("PPTX downloaded!");
+      toast.success(`${label} downloaded!`);
     } catch (e) {
       console.error(e);
       toast.error("Export failed");
@@ -183,9 +187,21 @@ const PresentationViewer = () => {
 
         <div className="w-px h-4 bg-border" />
 
-        <button onClick={handleExport} disabled={exporting} className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground disabled:opacity-50 transition-colors" title="Download PPTX">
-          {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-        </button>
+        <div className="relative">
+          <button onClick={() => setShowExportMenu((v) => !v)} disabled={exporting} className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground disabled:opacity-50 transition-colors" title="Download">
+            {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+          </button>
+          {showExportMenu && !exporting && (
+            <div className="absolute bottom-full mb-2 right-0 bg-card border border-border rounded-lg shadow-lg overflow-hidden min-w-[140px]">
+              <button onClick={() => handleExport("pptx")} className="flex items-center gap-2 w-full px-3 py-2 text-xs text-foreground hover:bg-accent transition-colors">
+                <FileDown className="w-3.5 h-3.5" /> Download PPTX
+              </button>
+              <button onClick={() => handleExport("pdf")} className="flex items-center gap-2 w-full px-3 py-2 text-xs text-foreground hover:bg-accent transition-colors">
+                <FileText className="w-3.5 h-3.5" /> Download PDF
+              </button>
+            </div>
+          )}
+        </div>
       </motion.div>
     </div>
   );
