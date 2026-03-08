@@ -32,14 +32,17 @@ const PresentationViewer = () => {
   const [showExportMenu, setShowExportMenu] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const handleExport = useCallback(async () => {
+  const handleExport = useCallback(async (format: "pptx" | "pdf") => {
     setExporting(true);
-    toast.info("Generating PPTX — capturing slides...");
+    setShowExportMenu(false);
+    const label = format.toUpperCase();
+    toast.info(`Generating ${label} — capturing slides...`);
     try {
-      await exportPresentation((cur, total) => {
+      const fn = format === "pptx" ? exportPresentation : exportPDF;
+      await fn((cur, total) => {
         toast.info(`Capturing slide ${cur}/${total}...`);
       });
-      toast.success("PPTX downloaded!");
+      toast.success(`${label} downloaded!`);
     } catch (e) {
       console.error(e);
       toast.error("Export failed");
