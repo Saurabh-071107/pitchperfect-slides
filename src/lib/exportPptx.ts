@@ -25,7 +25,6 @@ const slideComponents = [
 ];
 
 async function renderSlideToImage(Component: React.FC): Promise<string> {
-  // Create a visible but off-screen container so styles/SVGs render properly
   const container = document.createElement("div");
   container.style.position = "absolute";
   container.style.left = "-9999px";
@@ -34,57 +33,77 @@ async function renderSlideToImage(Component: React.FC): Promise<string> {
   container.style.height = "1080px";
   container.style.overflow = "hidden";
   container.style.zIndex = "-1";
-  // Ensure it inherits the dark theme background
   container.style.backgroundColor = "hsl(220, 20%, 7%)";
+  container.style.color = "hsl(210, 20%, 95%)";
   container.className = "slide-export-container";
+
+  // Copy all CSS custom properties from :root so html2canvas can resolve them
+  const rootStyles = getComputedStyle(document.documentElement);
+  const cssVars = [
+    "--background", "--foreground", "--card", "--card-foreground",
+    "--primary", "--primary-foreground", "--secondary", "--secondary-foreground",
+    "--muted", "--muted-foreground", "--accent", "--accent-foreground",
+    "--border", "--input", "--ring", "--radius",
+    "--slide-glow", "--slide-accent-green", "--slide-accent-orange",
+    "--slide-accent-red", "--slide-surface", "--slide-surface-hover",
+    "--destructive", "--destructive-foreground",
+  ];
+  cssVars.forEach((v) => {
+    const val = rootStyles.getPropertyValue(v);
+    if (val) container.style.setProperty(v, val);
+  });
+
   document.body.appendChild(container);
 
-  // Render the component
   const root = createRoot(container);
   await new Promise<void>((resolve) => {
     root.render(createElement(Component));
-    // Give time for:
-    // 1. React render
-    // 2. Framer-motion animations to complete
-    // 3. Fonts to apply
-    // 4. SVG icons to render
-    setTimeout(resolve, 1500);
+    setTimeout(resolve, 2000);
   });
 
-  // Convert all SVG elements to inline so html2canvas can capture them
+  // Resolve SVG currentColor to computed color values
   const svgs = container.querySelectorAll("svg");
   svgs.forEach((svg) => {
-    // Ensure SVGs have explicit dimensions and are visible
     const computed = window.getComputedStyle(svg);
-    if (!svg.getAttribute("width")) {
-      svg.setAttribute("width", computed.width);
-    }
-    if (!svg.getAttribute("height")) {
-      svg.setAttribute("height", computed.height);
-    }
-    // Convert currentColor to actual color
+    if (!svg.getAttribute("width")) svg.setAttribute("width", computed.width);
+    if (!svg.getAttribute("height")) svg.setAttribute("height", computed.height);
     const color = computed.color;
     svg.querySelectorAll("*").forEach((el) => {
-      const elStyle = window.getComputedStyle(el);
-      if (elStyle.stroke === "currentColor" || el.getAttribute("stroke") === "currentcolor") {
+      const s = window.getComputedStyle(el);
+      if (s.stroke === "currentColor" || el.getAttribute("stroke") === "currentcolor") {
         (el as HTMLElement).style.stroke = color;
       }
-      if (elStyle.fill === "currentColor" || el.getAttribute("fill") === "currentcolor") {
+      if (s.fill === "currentColor" || el.getAttribute("fill") === "currentcolor") {
         (el as HTMLElement).style.fill = color;
       }
     });
   });
 
-  // Capture with html2canvas
+  // Inline all computed background/color styles for elements using CSS vars
+  // so html2canvas (which can't resolve CSS custom properties) sees real values
+  container.querySelectorAll("*").forEach((el) => {
+    const cs = getComputedStyle(el);
+    const htmlEl = el as HTMLElement;
+    if (cs.backgroundColor && cs.backgroundColor !== "rgba(0, 0, 0, 0)") {
+      htmlEl.style.backgroundColor = cs.backgroundColor;
+    }
+    if (cs.color) {
+      htmlEl.style.color = cs.color;
+    }
+    if (cs.borderColor && cs.borderColor !== "rgb(0, 0, 0)") {
+      htmlEl.style.borderColor = cs.borderColor;
+    }
+  });
+
   const canvas = await html2canvas(container, {
     width: 1920,
     height: 1080,
-    scale: 2, // 2x for crisp output
+    scale: 2,
     backgroundColor: "#0B0F14",
     useCORS: true,
     logging: false,
     allowTaint: true,
-    foreignObjectRendering: true,
+    foreignObjectRendering: false,
   });
 
   const dataUrl = canvas.toDataURL("image/png", 1.0);
