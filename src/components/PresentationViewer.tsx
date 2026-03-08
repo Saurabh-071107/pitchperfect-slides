@@ -183,8 +183,8 @@ const PresentationViewer = () => {
 
         <div className="w-px h-4 bg-border" />
 
-        <button onClick={() => exportPresentation()} className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors" title="Download PPTX">
-          <Download className="w-4 h-4" />
+        <button onClick={handleExport} disabled={exporting} className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground disabled:opacity-50 transition-colors" title="Download PPTX">
+          {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
         </button>
       </motion.div>
     </div>
