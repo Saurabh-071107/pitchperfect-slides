@@ -1,4 +1,5 @@
 import pptxgen from "pptxgenjs";
+import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
 import { createElement } from "react";
 import { createRoot } from "react-dom/client";
