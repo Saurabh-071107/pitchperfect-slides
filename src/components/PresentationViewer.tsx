@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, Maximize, Minimize, Grid, Download } from "lucide-react";
+import { ChevronLeft, ChevronRight, Maximize, Minimize, Grid, Download, Loader2 } from "lucide-react";
 import { exportPresentation } from "@/lib/exportPptx";
+import { toast } from "sonner";
 import SlideTitleSlide from "./slides/SlideTitleSlide";
 import SlideProblem from "./slides/SlideProblem";
 import SlideSolution from "./slides/SlideSolution";
