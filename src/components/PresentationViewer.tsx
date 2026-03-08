@@ -29,6 +29,7 @@ const PresentationViewer = () => {
   const [showGrid, setShowGrid] = useState(false);
   const [scale, setScale] = useState(1);
   const [exporting, setExporting] = useState(false);
+  const [showExportMenu, setShowExportMenu] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const handleExport = useCallback(async () => {
