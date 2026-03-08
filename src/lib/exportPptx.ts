@@ -79,7 +79,7 @@ async function renderSlideToImage(Component: React.FC): Promise<string> {
     });
   });
 
-  // Inline all computed background/color styles for elements using CSS vars
+  // Inline all computed styles for elements using CSS vars
   // so html2canvas (which can't resolve CSS custom properties) sees real values
   container.querySelectorAll("*").forEach((el) => {
     const cs = getComputedStyle(el);
@@ -92,6 +92,22 @@ async function renderSlideToImage(Component: React.FC): Promise<string> {
     }
     if (cs.borderColor && cs.borderColor !== "rgb(0, 0, 0)") {
       htmlEl.style.borderColor = cs.borderColor;
+    }
+    // Inline boxShadow so html2canvas can resolve CSS var-based shadows
+    if (cs.boxShadow && cs.boxShadow !== "none") {
+      htmlEl.style.boxShadow = cs.boxShadow;
+    }
+    // Inline background-image (gradients using CSS vars)
+    if (cs.backgroundImage && cs.backgroundImage !== "none") {
+      htmlEl.style.backgroundImage = cs.backgroundImage;
+    }
+    // Inline opacity
+    if (cs.opacity && cs.opacity !== "1") {
+      htmlEl.style.opacity = cs.opacity;
+    }
+    // Inline filter/blur
+    if (cs.filter && cs.filter !== "none") {
+      htmlEl.style.filter = cs.filter;
     }
   });
 
