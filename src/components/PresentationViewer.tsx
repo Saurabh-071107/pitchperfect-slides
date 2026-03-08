@@ -28,7 +28,24 @@ const PresentationViewer = () => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showGrid, setShowGrid] = useState(false);
   const [scale, setScale] = useState(1);
+  const [exporting, setExporting] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const handleExport = useCallback(async () => {
+    setExporting(true);
+    toast.info("Generating PPTX — capturing slides...");
+    try {
+      await exportPresentation((cur, total) => {
+        toast.info(`Capturing slide ${cur}/${total}...`);
+      });
+      toast.success("PPTX downloaded!");
+    } catch (e) {
+      console.error(e);
+      toast.error("Export failed");
+    } finally {
+      setExporting(false);
+    }
+  }, []);
 
   const updateScale = useCallback(() => {
     if (!containerRef.current) return;
